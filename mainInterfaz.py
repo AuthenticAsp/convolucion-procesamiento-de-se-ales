@@ -69,52 +69,55 @@ def graficar_comparacion(audio_original, audio_procesado, sr, titulo):
     plt.show()
 
 # Leer el archivo de audio
-audio, sr = sf.read('Senales/Practicas/p1Convolucion/audio3.wav')
+audio, sr = sf.read('audioWhatsapp.wav')
 
-# Menú de selección de efecto
-print("Seleccione el efecto que desea aplicar:")
-print("1. Eco")
-print("2. Filtro Paso Bajo")
-print("3. Filtro Paso Alto")
-print("4. Reverberación")
-opcion = int(input("Ingrese el número de la opción: "))
+opcion = 1
+while True:
+    print("\n")
+    print("Seleccione el efecto que desea aplicar:")
+    print("1. Eco")
+    print("2. Filtro Paso Bajo")
+    print("3. Filtro Paso Alto")
+    print("4. Reverberación")
+    print("0. Salir")
+    opcion = int(input("Ingrese el número de la opción: "))
+    if opcion == 1:
+        duracion_impulso = 2.0  # Duración total del impulso (en segundos)
+        retardo = 0.5  # Retardo del eco (en segundos)
+        decaimiento = 0.6  # Factor de decaimiento del eco
+        impulso_echo = generar_impulso_echo(duracion_impulso, retardo, decaimiento, sr)
+        
+        if len(audio.shape) == 1:  # Mono
+            audio_con_efecto = convolve(audio, impulso_echo, mode='full')
+        else:  # Estéreo o más canales
+            audio_con_efecto = np.array([convolve(channel, impulso_echo, mode='full') for channel in audio.T]).T
+        
+        audio_con_efecto = audio_con_efecto / np.max(np.abs(audio_con_efecto))
+        titulo = "Señal con Eco"
 
-# Aplicar el efecto seleccionado
-if opcion == 1:
-    duracion_impulso = 2.0  # Duración total del impulso (en segundos)
-    retardo = 0.5  # Retardo del eco (en segundos)
-    decaimiento = 0.6  # Factor de decaimiento del eco
-    impulso_echo = generar_impulso_echo(duracion_impulso, retardo, decaimiento, sr)
-    
-    if len(audio.shape) == 1:  # Mono
-        audio_con_efecto = convolve(audio, impulso_echo, mode='full')
-    else:  # Estéreo o más canales
-        audio_con_efecto = np.array([convolve(channel, impulso_echo, mode='full') for channel in audio.T]).T
-    
-    audio_con_efecto = audio_con_efecto / np.max(np.abs(audio_con_efecto))
-    titulo = "Señal con Eco"
+    elif opcion == 2:
+        audio_con_efecto = filtro_paso_bajo_conv(audio, sr)
+        titulo = "Señal con Filtro Paso Bajo (Convolución)"
 
-elif opcion == 2:
-    audio_con_efecto = filtro_paso_bajo_conv(audio, sr)
-    titulo = "Señal con Filtro Paso Bajo (Convolución)"
+    elif opcion == 3:
+        audio_con_efecto = filtro_paso_alto_conv(audio, sr)
+        titulo = "Señal con Filtro Paso Alto (Convolución)"
 
-elif opcion == 3:
-    audio_con_efecto = filtro_paso_alto_conv(audio, sr)
-    titulo = "Señal con Filtro Paso Alto (Convolución)"
+    elif opcion == 4:
+        reverb_decay = 0.5  # Decaimiento de la reverberación
+        audio_con_efecto = agregar_reverberacion(audio, sr, reverb_decay)
+        titulo = "Señal con Reverberación"
+        
+    elif opcion == 0:
+        break
+    # si es una opcion valida
+    if opcion in [1, 2, 3, 4]:
+        # Guardar el archivo de audio con el efecto aplicado
+        sf.write(f'audioWhatsappEfecto_{opcion}.wav', audio_con_efecto, sr)
+        # Graficar la señal original y la procesada
+        graficar_comparacion(audio, audio_con_efecto, sr, titulo)
+    else:
+        print("Opción no válida. Intente de nuevo.")
+        continue
 
-elif opcion == 4:
-    reverb_decay = 0.5  # Decaimiento de la reverberación
-    audio_con_efecto = agregar_reverberacion(audio, sr, reverb_decay)
-    titulo = "Señal con Reverberación"
-    
-else:
-    print("Opción no válida")
-    exit()
-
-# Guardar el resultado en un nuevo archivo de audio
-sf.write(f'Senales/Practicas/p1Convolucion/audio_con_efecto_{opcion}.wav', audio_con_efecto, sr)
-
-# Graficar la comparación entre la señal original y la procesada
-graficar_comparacion(audio, audio_con_efecto, sr, titulo)
-
-print(f"El efecto ha sido aplicado y el archivo ha sido guardado como 'audio_con_efecto_{opcion}.wav'.")
+#print(f"El efecto ha sido aplicado y el archivo ha sido guardado como 'audio_con_efecto_{opcion}.wav'.")
