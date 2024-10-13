@@ -114,8 +114,8 @@ sub_ECO = tk.Frame(button_frame, bg='#D8DFE8')
 sub_ECO.pack(anchor="w", pady=5)
 button = tk.Button(sub_ECO, height=2,text="Filtro Eco", width=20, bg="#0A3871", font=("Helvetica", 15, "bold"), 
                    fg="white", relief="flat", activebackground="#1A5CBF", activeforeground="white", command=ecoFuncion)
-button.pack(side=tk.LEFT, padx=10)
-label = tk.Label(sub_ECO, text="Este filtro....", font=("Helvetica", 15), bg='#D8DFE8')
+button.pack(side=tk.LEFT, padx=12)
+label = tk.Label(sub_ECO, text="El eco se produce repitiendo la señal con un retardo (delay) y una atenuación, el resultado es que las partes de la señal se repiten, simulando un efecto de eco.", font=("Helvetica", 13), bg='#D8DFE8', wraplength=600)
 label.pack(side=tk.LEFT)
 
 #---------------- PASO BAJO ----------------#
@@ -123,8 +123,8 @@ sub_PB = tk.Frame(button_frame, bg='#D8DFE8')
 sub_PB.pack(anchor="w", pady=5)
 button = tk.Button(sub_PB, height=2,text="Filtro Paso Bajo", width=20, bg="#0A3871", font=("Helvetica", 15, "bold"), 
                    fg="white", relief="flat", activebackground="#1A5CBF", activeforeground="white", command=pasoBajoFuncion)
-button.pack(side=tk.LEFT, padx=10)
-label = tk.Label(sub_PB, text="Este filtro....", font=("Helvetica", 15), bg='#D8DFE8')
+button.pack(side=tk.LEFT, padx=12)
+label = tk.Label(sub_PB, text="El filtro de paso bajo atenúa las frecuencias altas mientras permite que las frecuencias bajas pasen, suavizando la señal y eliminando sonidos agudos no deseados.", font=("Helvetica", 13), bg='#D8DFE8', wraplength=600)
 label.pack(side=tk.LEFT)
 
 #---------------- PASO ALTO ----------------#
@@ -132,8 +132,8 @@ sub_PA = tk.Frame(button_frame, bg='#D8DFE8')
 sub_PA.pack(anchor="w", pady=5)
 button = tk.Button(sub_PA, height=2,text="Filtro Paso Alto", width=20, bg="#0A3871", font=("Helvetica", 15, "bold"), 
                    fg="white", relief="flat", activebackground="#1A5CBF", activeforeground="white", command=pasoAltoFuncion)
-button.pack(side=tk.LEFT, padx=10)
-label = tk.Label(sub_PA, text="Este filtro....", font=("Helvetica", 15), bg='#D8DFE8')
+button.pack(side=tk.LEFT, padx=12)
+label = tk.Label(sub_PA, text="El filtro de paso alto permite que las frecuencias altas se mantengan y atenúa las frecuencias bajas, eliminando ruidos de fondo y resaltando las partes más agudas del sonido.", font=("Helvetica", 13), bg='#D8DFE8', wraplength=600)
 label.pack(side=tk.LEFT)
 
 #---------------- REVERBERACIÓN ----------------#
@@ -141,8 +141,8 @@ sub_REVERB = tk.Frame(button_frame, bg='#D8DFE8')
 sub_REVERB.pack(anchor="w", pady=5)
 button = tk.Button(sub_REVERB, height=2,text="Filtro Reverberación", width=20, bg="#0A3871", font=("Helvetica", 15, "bold"), 
                    fg="white", relief="flat", activebackground="#1A5CBF", activeforeground="white", command=reverbFuncion)
-button.pack(side=tk.LEFT, padx=10)
-label = tk.Label(sub_REVERB, text="Este filtro....", font=("Helvetica", 15), bg='#D8DFE8')
+button.pack(side=tk.LEFT, padx=12)
+label = tk.Label(sub_REVERB, text="La reverberación simula las reflexiones del sonido en espacios cerrados; se añaden repeticiones cortas y atenuadas que dan una sensación de profundidad y ambiente.", font=("Helvetica", 13), bg='#D8DFE8', wraplength=600)
 label.pack(side=tk.LEFT)
 
 #------------------------ Canvas Frame ------------------------#
