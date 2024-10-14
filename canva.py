@@ -9,13 +9,12 @@ import threading
 from threading import Condition
 
 class RealTimeAudioPlot:
-    def __init__(self, root):
+    def __init__(self, root, parent_frame):
         self.root = root
         self.root.title("Gráfico de Audio en Tiempo Real")
 
-        # Marco principal
-        self.frame = tk.Frame(self.root)
-        self.frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # Usamos el Frame que se pasa como argumento
+        self.frame = parent_frame
 
         imgPausa = Image.open("pausaIcon.png")
         imgPlay = Image.open("playIcon.png")
@@ -37,18 +36,23 @@ class RealTimeAudioPlot:
         self.btnReanudar.pack(side=tk.TOP, padx=10, pady=10)
 
         # Boton cerrar ventana
-        self.btnCerrar = tk.Button(self.frame, text="Cerrar", command=self.cerrarVentana)
-        self.btnCerrar.pack(side=tk.TOP, padx=10, pady=10)
+        # self.btnCerrar = tk.Button(self.frame, text="Cerrar", command=self.cerrarVentana)
+        # self.btnCerrar.pack(side=tk.TOP, padx=10, pady=10)
 
-        # Configuración de matplotlib para la gráfica
-        self.fig, self.ax = plt.subplots()
+        # Configuración de matplotlib para la gráfica dinámica (reducir tamaño con figsize)
+        self.fig, self.ax = plt.subplots(figsize=(5, 2))  # Ancho, alto reducido
         self.line, = self.ax.plot([], [], lw=2)
         self.ax.set_ylim(-1, 1)
         self.ax.set_xlim(0, 1024)
 
-        # Lienzo de matplotlib en Tkinter
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-        self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
+        # Lienzo de matplotlib en Tkinter para gráfico dinámico
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        self.canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.X, expand=1)  # Expansión solo horizontal
+
+        # Lienzo de matplotlib para gráfico estático (reducir tamaño con figsize)
+        self.fig_static, self.ax_static = plt.subplots(figsize=(5, 2))  # Ancho, alto reducido
+        self.canvas_static = FigureCanvasTkAgg(self.fig_static, master=self.frame)
+        self.canvas_static.get_tk_widget().pack(side=tk.LEFT, fill=tk.X, expand=1)  # Expansión solo horizontal
 
         # Variables para PyAudio y datos del archivo
         self.chunk = 1024
@@ -61,7 +65,8 @@ class RealTimeAudioPlot:
         self.lock = threading.Lock()
         self.condition = Condition(self.lock)
 
-        self.cargarWav("audioWhatsapp.wav")
+        # self.cargarWav("audioWhatsapp.wav")
+
 
     def cargarWav(self, rutaArchivo):
         # Abrir el archivo WAV
@@ -69,12 +74,19 @@ class RealTimeAudioPlot:
         self.rate = self.wf.getframerate()
         self.chunk = 1024
 
+        # Leer todos los datos del archivo para el gráfico estático
+        audio_data_full = self.wf.readframes(self.wf.getnframes())
+        self.audio_data_static = np.frombuffer(audio_data_full, dtype=np.int16) / 32768.0
+
         # Configurar PyAudio
         p = pyaudio.PyAudio()
         self.stream = p.open(format=p.get_format_from_width(self.wf.getsampwidth()),
                              channels=self.wf.getnchannels(),
                              rate=self.rate,
                              output=True)
+
+        # Resetear posición del archivo después de leer todo para la gráfica
+        self.wf.rewind()
 
         self.estaEjecutando = True
         self.estaPausado = False
@@ -85,8 +97,32 @@ class RealTimeAudioPlot:
         self.hiloAudio = threading.Thread(target=self.reproducirWav)
         self.hiloAudio.start()
 
-        # Actualizar el gráfico conforme se reproduce el audio
+        # Limpiar y actualizar las gráficas
+        self.limpiarGraficas()
+        self.mostrarPlotEstatico()
         self.actualizarPlot()
+        self.root.update()
+
+    def limpiarGraficas(self):
+        # Limpiar gráfico dinámico
+        self.ax.clear()
+        self.ax.set_ylim(-1, 1)
+        self.ax.set_xlim(0, 1024)
+        self.line, = self.ax.plot([], [], lw=2)
+        self.canvas.draw()
+
+        # Limpiar gráfico estático
+        self.ax_static.clear()
+        self.canvas_static.draw()
+
+    def mostrarPlotEstatico(self):
+        # Limpiar el gráfico estático y plotear toda la señal
+        self.ax_static.clear()
+        self.ax_static.plot(self.audio_data_static)
+        self.ax_static.set_title("Señal completa")
+        self.ax_static.set_xlim(0, len(self.audio_data_static))
+        self.ax_static.set_ylim(-1, 1)
+        self.canvas_static.draw()
 
     def reproducirWav(self):
         while self.estaEjecutando:
@@ -138,8 +174,8 @@ class RealTimeAudioPlot:
             self.wf.close()
         self.root.destroy()
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = RealTimeAudioPlot(root)
-    root.protocol("WM_DELETE_WINDOW", app.cerrarVentana)
-    root.mainloop()
+# if __name__ == "__main__":
+#     root = tk.Tk()
+#     app = RealTimeAudioPlot(root)
+#     root.protocol("WM_DELETE_WINDOW", app.cerrarVentana)
+#     root.mainloop()

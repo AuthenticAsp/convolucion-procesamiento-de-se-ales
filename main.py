@@ -4,11 +4,12 @@ from scipy.signal import convolve
 import matplotlib.pyplot as plt
 import tkinter as tk
 import tkinter.filedialog
-
+from canva import RealTimeAudioPlot
 #-------------------------------- FUNCIONES --------------------------------#
 audio = None
 sr = None
 audioConEfecto = None
+app = None
 #---------------- Cargar Archivo ----------------#
 def cargarArchivo():
     global audio, sr
@@ -18,7 +19,6 @@ def cargarArchivo():
         print(f"Audio: {audio.shape}, SR: {sr}")
     else:
         print("No se seleccionó ningún archivo")
-
 
 #---------------- Generar Impulso Eco ----------------#
 def generarImpulsoEco(duracionImpulso, retardo, decaimiento, sr):
@@ -34,7 +34,7 @@ def generarImpulsoEco(duracionImpulso, retardo, decaimiento, sr):
 
 #---------------- Función Eco ----------------#
 def ecoFuncion():
-    global audioConEfecto, sr, audio
+    global audioConEfecto, sr, audio, app
     duracionImpulso = 2.0  # Duración total del impulso
     retardo = 0.5  # Retardo del eco 
     decaimiento = 0.6  # Factor de decaimiento del eco
@@ -48,9 +48,13 @@ def ecoFuncion():
     audioConEfecto = audioConEfecto / np.max(np.abs(audioConEfecto))
     sf.write("audioConEco.wav", audioConEfecto, sr)
 
+    
+    app.cargarWav("audioConEco.wav")
+
+
 #---------------- Función Paso Bajo ----------------#
 def pasoBajoFuncion():
-    global audioConEfecto, sr, audio
+    global audioConEfecto, sr, audio, app
     tamanokernel=101
     kernel = np.ones(tamanokernel) / tamanokernel  # Kernel promedio simple (filtro paso bajo)
     if len(audio.shape) == 1:  # Mono
@@ -60,9 +64,11 @@ def pasoBajoFuncion():
     audioConEfecto = audioConEfecto / np.max(np.abs(audioConEfecto))
     sf.write("audioPasoBajo.wav", audioConEfecto, sr)
 
+    app.cargarWav("audioPasoBajo.wav")
+
 #---------------- Función Paso Alto ----------------#
 def pasoAltoFuncion():
-    global audioConEfecto, sr, audio
+    global audioConEfecto, sr, audio, app
     tamanokernel=101
     kernel = -np.ones(tamanokernel) / tamanokernel
     kernel[tamanokernel // 2] = 1 + kernel[tamanokernel // 2]  # Asegurar que pasa las altas frecuencias
@@ -73,9 +79,12 @@ def pasoAltoFuncion():
     audioConEfecto = audioConEfecto / np.max(np.abs(audioConEfecto))
     sf.write("audioPasoAlto.wav", audioConEfecto, sr)
 
+    root.update()
+    app.cargarWav("audioPasoAlto.wav")
+
 #---------------- Función Reverberación ----------------#
 def reverbFuncion():
-    global audioConEfecto, sr, audio
+    global audioConEfecto, sr, audio, app
     reverbDecay = 0.5
     duracionImpulso = 2.5  # 1.5 segundos de reverberación
     impulsoReverb = generarImpulsoEco(duracionImpulso, 0.05, reverbDecay, sr)
@@ -85,6 +94,9 @@ def reverbFuncion():
         audioConEfecto = np.array([convolve(channel, impulsoReverb, mode='full') for channel in audio.T]).T
     audioConEfecto = audioConEfecto / np.max(np.abs(audioConEfecto))
     sf.write("audioReverb.wav", audioConEfecto, sr)
+
+    
+    app.cargarWav("audioReverb.wav")
 
 #---------------- Función Graficar ----------------#
 #Código tuyo @Ulisex#
@@ -149,6 +161,8 @@ label.pack(side=tk.LEFT)
 canvas_frame = tk.Frame(root, bg='#D8DFE8')
 canvas_frame.pack(pady=10)
 
-#Código tuyo @Ulisex#
+# Integrar la clase RealTimeAudioPlot aquí
+app = RealTimeAudioPlot(root, canvas_frame)
 
+#------------------------ Main Loop ------------------------#
 root.mainloop()
